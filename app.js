@@ -18,34 +18,38 @@ async function fetchAll() {
 }
 //***********************************************************************/
 //creating post request so partys can be updated
-const createParty = async (name, description, location, date) => {
+async function createParty(name, description, date, location) {
   try {
     const response = await fetch(`${API_URL}/events`, {
       method: "POST",
       body: JSON.stringify({
         name,
         description,
-        location,
         date,
+        location,
       }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    const event = await response.json();
-    return event;
+    const party = await response.json();
+    return party;
   } catch (error) {
-    console.error("There was an Error /POST create events", error);
+    console.error("Error in /POST request:", error);
   }
-};
+}
 
 //***********************************************************************/
 //creating delete request to delete partys
 async function deleteParty(id) {
   try {
-    const reponse = fetch(`${API_URL}/events/${id}`, {
+    const reponse = await fetch(`${API_URL}/events/${id}`, {
       method: "DELETE",
     });
+    const party = await reponse.json();
+    return party;
   } catch (error) {
-    console.error("/DELETE there was an error here");
+    console.error("/DELETE there was an error here", error);
   }
 }
 //***********************************************************************/
@@ -56,7 +60,7 @@ async function renderPartys(party) {
     return; // if no partys inform user that there is no partys
   }
   listParty.innerHTML = "";
-  party.forEach(function (party) {
+  party.forEach((party) => {
     const partyElement = document.createElement("div");
     partyElement.classList.add("partyItem");
     partyElement.innerHTML = ` <h1>${party.name}</h1>
@@ -70,10 +74,10 @@ async function renderPartys(party) {
     let deleteparty = partyElement.querySelector(".delete-Party");
     deleteparty.addEventListener("click", async function (event) {
       event.preventDefault;
-      await deleteParty(party.id);
+      deleteParty(party.id);
 
-      const party = fetchAll();
-      renderPartys(party);
+      const event1 = await fetchAll();
+      renderPartys(event1);
     });
   });
 }
@@ -91,13 +95,6 @@ async function newUserParty() {
     name="description"
     placeholder="Description of your party"
   />
-  <label for="date">date</label>
-  <input
-    type="text"
-    id="date"
-    name="date"
-    placeholder="When it is happening?"
-  />
   <label for="location">location</label>
   <input
     type="text"
@@ -114,20 +111,18 @@ async function newUserParty() {
     const partyinfo = await {
       name: form.name.value,
       description: form.description.value,
-      date: form.date.value,
       location: form.location.value,
     };
     await createParty(
       partyinfo.name,
       partyinfo.description,
-      partyinfo.date,
+      new Date(),
       partyinfo.location
     );
     const party = await fetchAll();
     renderPartys(party);
     form.name.value = "";
     form.description.value = "";
-    form.date.value = "";
     form.location.value = "";
   });
 }
